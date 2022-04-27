@@ -21,6 +21,13 @@ osPatch=("$rlecStopall; yum -y update; reboot")
 osCheck=("uptime |awk '{print \$3}'")
 reBalance=("rladmin migrate endpoint_to_shards commit")
 
+sleepTimer() {
+    for (( i=90; i>0; i--)); do
+        sleep 1  &
+        printf "  $i \r"
+        wait
+    done
+}
 
 #Restart rlec_supervisor if necessary
 echo "Verifying rlec_supervisor."
@@ -36,7 +43,7 @@ do
             else
                echo "rlec_supervisor isn't functioning properly on $i, retsarting"
                 $connect $i $rlecSupRestart
-                sleep 20
+                sleep 20s
             fi
 
 done
@@ -51,12 +58,15 @@ do
     echo ""
     echo $j
     $connect $j $osPatch
-    sleep 5s
+    echo ""
+    echo "Rebooting System..."
+    sleepTimer
+    echo ""
     until [[ `$ctlCheck2` == 'RUNNING' ]]
     do
         echo ""
         echo "Awaiting system reboot..."
-        sleep 20
+        sleepTimer
     done
     echo ""
     echo "Node is up and running, and the Redis services are started on node $j,  Continuing script."
@@ -67,25 +77,27 @@ done
 echo "Failing over $master from master node status"
 oldMaster=$master
 $connect $master "rlutil change_master master=${slaveNum[0]}"
-sleep 20
+sleep 20s
 echo "Upgrading $oldMaster"
     ctlCheck2=("$connect $oldMaster $rlecSupcheck")
     echo ""
     echo $oldMaster
     $connect $oldMaster $osPatch
 
-    sleep 5
+    echo ""
+    echo "Rebooting System..."
+    sleepTimer
+    echo ""
     until [[ `$ctlCheck2` == 'RUNNING' ]]
     do
         echo ""
         echo "Awaiting system reboot..."
-        sleep 20
+        sleepTimer
     done
 echo ""
 echo "Node is up and running, and the Redis services are started on node $oldMaster."
 echo "OS patching process completed"
 echo ""
-
 # --Validations
 
 echo "Validating DB health"
@@ -93,18 +105,18 @@ echo ""
 echo "Rebalancing Databases if necessary..."
 echo""
 $connect $clusterNode $reBalance
-sleep 30
+sleepTimer
 echo""
 echo "Checking DB status"
 
 for k in $dbStat
 do
-        sleep 120
+        sleepTimer
         if [[ $k == 'OK' ]]
         then
             echo "Database shard status reporting 'OK' "
         else
             echo "An issue with one of the databases in the cluster exists, please investigate!"
-        sleep 1
+        sleep 1s
         fi
 done

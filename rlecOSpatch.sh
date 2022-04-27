@@ -22,7 +22,7 @@ osCheck=("uptime |awk '{print \$3}'")
 reBalance=("rladmin migrate endpoint_to_shards commit")
 
 sleepTimer() {
-    for (( i=90; i>0; i--)); do
+    for (( i=90; i>=0; i--)); do
         sleep 1  &
         printf "  $i \r"
         wait

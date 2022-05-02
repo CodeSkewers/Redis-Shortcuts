@@ -1,0 +1,13 @@
+{
+    "<Cluster Identifier>":{
+        "node":"<Node Name for one node in the cluster>",
+            "login":"<Cluster Admin Login Name>:<Password>",
+            "url":"https://<cluster URL>:9443/v1/license"
+    },
+
+    "<Cluster Identifier>":{
+        "node":"<Node Name for one node in the cluster>",
+            "login":"<Cluster Admin Login Name>:<Password>",
+            "url":"https://<cluster URL>:9443/v1/license"
+    }
+}
